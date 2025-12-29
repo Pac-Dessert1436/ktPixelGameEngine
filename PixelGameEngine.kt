@@ -773,7 +773,7 @@ abstract class PixelGameEngine {
     }
 
     // o-----------------------------------------------------------------------------o
-    // | Drawing Functions                                                           |
+    // | Drawing Functions for Points, Rectangles, Circles, Triangles, and Sprites   |
     // o-----------------------------------------------------------------------------o
     fun draw(x: Int, y: Int, pixel: Pixel = Presets.WHITE) {
         if (x < 0 || x >= screenSize.x || y < 0 || y >= screenSize.y) return
@@ -899,6 +899,281 @@ abstract class PixelGameEngine {
 
     fun fillCircle(pos: Vf2d, radius: Float, pixel: Pixel = Presets.WHITE) {
         fillCircle(pos.x.toInt(), pos.y.toInt(), radius.toInt(), pixel)
+    }
+
+    fun drawTriangle(
+            x1: Int,
+            y1: Int,
+            x2: Int,
+            y2: Int,
+            x3: Int,
+            y3: Int,
+            pixel: Pixel = Presets.WHITE
+    ) {
+        drawLine(x1, y1, x2, y2, pixel)
+        drawLine(x2, y2, x3, y3, pixel)
+        drawLine(x3, y3, x1, y1, pixel)
+    }
+
+    fun drawTriangle(pos1: Vi2d, pos2: Vi2d, pos3: Vi2d, pixel: Pixel = Presets.WHITE) {
+        drawTriangle(pos1.x, pos1.y, pos2.x, pos2.y, pos3.x, pos3.y, pixel)
+    }
+
+    fun drawTriangle(
+            x1: Float,
+            y1: Float,
+            x2: Float,
+            y2: Float,
+            x3: Float,
+            y3: Float,
+            pixel: Pixel = Presets.WHITE
+    ) {
+        drawTriangle(x1.toInt(), y1.toInt(), x2.toInt(), y2.toInt(), x3.toInt(), y3.toInt(), pixel)
+    }
+
+    fun drawTriangle(pos: Vf2d, pos2: Vf2d, pos3: Vf2d, pixel: Pixel = Presets.WHITE) {
+        drawTriangle(
+                pos.x.toInt(),
+                pos.y.toInt(),
+                pos2.x.toInt(),
+                pos2.y.toInt(),
+                pos3.x.toInt(),
+                pos3.y.toInt(),
+                pixel
+        )
+    }
+
+    fun fillTriangle(pos1: Vi2d, pos2: Vi2d, pos3: Vi2d, pixel: Pixel = Presets.WHITE) {
+        fillTriangle(pos1.x, pos1.y, pos2.x, pos2.y, pos3.x, pos3.y, pixel)
+    }
+
+    fun fillTriangle(
+            x1: Int,
+            y1: Int,
+            x2: Int,
+            y2: Int,
+            x3: Int,
+            y3: Int,
+            pixel: Pixel = Presets.WHITE
+    ) {
+        val drawline = { sx: Int, ex: Int, ny: Int -> for (i in sx..ex) draw(i, ny, pixel) }
+
+        var xx1 = x1
+        var yy1 = y1
+        var xx2 = x2
+        var yy2 = y2
+        var xx3 = x3
+        var yy3 = y3
+
+        if (yy1 > yy2) {
+            yy1 = yy2.also { yy2 = yy1 }
+            xx1 = xx2.also { xx2 = xx1 }
+        }
+        if (yy1 > yy3) {
+            yy1 = yy3.also { yy3 = yy1 }
+            xx1 = xx3.also { xx3 = xx1 }
+        }
+        if (yy2 > yy3) {
+            yy2 = yy3.also { yy3 = yy2 }
+            xx2 = xx3.also { xx3 = xx2 }
+        }
+
+        // Some variables must be initialized to avoid compilation errors
+        var t1x: Int
+        var t2x: Int = 0
+        var y: Int = 0
+        var minx: Int
+        var maxx: Int
+        var t1xp: Int
+        var t2xp: Int
+        var changed1: Boolean
+        var changed2: Boolean = false
+        var signx1: Int
+        var signx2: Int = 0
+        var dx1: Int
+        var dy1: Int
+        var dx2: Int = 0
+        var dy2: Int = 0
+        var e1: Int
+        var e2: Int = 0
+
+        // Kotlin does not have "goto"; use nested functions instead
+        fun phase1() {
+            t1x = xx1
+            t2x = xx1
+            y = yy1
+
+            dx1 = xx2 - xx1
+            signx1 =
+                    if (dx1 < 0) {
+                        dx1 = -dx1
+                        -1
+                    } else 1
+            dy1 = yy2 - yy1
+
+            dx2 = xx3 - xx1
+            signx2 =
+                    if (dx2 < 0) {
+                        dx2 = -dx2
+                        -1
+                    } else 1
+            dy2 = yy3 - yy1
+
+            changed1 = dy1 > dx1
+            if (changed1) dx1 = dy1.also { dy1 = dx1 }
+            changed2 = dy2 > dx2
+            if (changed2) dx2 = dy2.also { dy2 = dx2 }
+            e1 = dx1 shr 1
+            e2 = dx2 shr 1
+            if (yy1 == yy2) return
+
+            var i = 0
+            while (i < dx1) {
+                t1xp = 0
+                t2xp = 0
+                minx = if (t1x < t2x) t1x else t2x
+                maxx = if (t1x > t2x) t1x else t2x
+
+                fun edge1() {
+                    while (i < dx1) {
+                        i++
+                        e1 += dy1
+                        while (e1 >= dx1) {
+                            e1 -= dx1
+                            if (changed1) {
+                                t1xp = signx1
+                                return
+                            } else return
+                        }
+                        if (changed1) return
+                        t1x += signx1
+                    }
+                }
+                edge1()
+                fun edge2() {
+                    while (true) {
+                        e2 += dy2
+                        while (e2 >= dx2) {
+                            e2 -= dx2
+                            if (changed2) {
+                                t2xp = signx2
+                                return
+                            } else return
+                        }
+                        if (changed2) return
+                        t2x += signx2
+                    }
+                }
+                edge2()
+
+                if (minx > t1x) minx = t1x
+                if (minx > t2x) minx = t2x
+                if (maxx < t1x) maxx = t1x
+                if (maxx < t2x) maxx = t2x
+                drawline(minx, maxx, y)
+
+                if (!changed1) t1x += signx1
+                t1x += t1xp
+                if (!changed2) t2x += signx2
+                t2x += t2xp
+                y++
+                if (y == yy2) return@phase1
+            }
+        }
+        fun phase2() {
+            dx1 = xx3 - xx2
+            signx1 =
+                    if (dx1 < 0) {
+                        dx1 = -dx1
+                        -1
+                    } else 1
+            dy1 = yy3 - yy2
+            t1x = xx2
+
+            changed1 = dy1 > dx1
+            if (changed1) dy1 = dx1.also { dx1 = dy1 }
+            e1 = dx1 shr 1
+
+            var i = 0
+            while (i <= dx1) {
+                t1xp = 0
+                t2xp = 0
+                minx = if (t1x < t2x) t1x else t2x
+                maxx = if (t1x > t2x) t1x else t2x
+                fun edge1() {
+                    while (i < dx1) {
+                        e1 += dy1
+                        while (e1 >= dx1) {
+                            e1 -= dx1
+                            if (changed1) {
+                                t1xp = signx1
+                                return
+                            } else return
+                        }
+                        if (changed1) return
+                        t1x += signx1
+                        i++
+                    }
+                }
+                edge1()
+
+                fun edge2() {
+                    while (t2x != xx3) {
+                        e2 += dy2
+                        while (e2 >= dx2) {
+                            e2 -= dx2
+                            if (changed2) {
+                                t2xp = signx2
+                                return
+                            } else return
+                        }
+                        if (changed2) return
+                        t2x += signx2
+                    }
+                }
+                edge2()
+                if (minx > t1x) minx = t1x
+                if (minx > t2x) minx = t2x
+                if (maxx < t1x) maxx = t1x
+                if (maxx < t2x) maxx = t2x
+                drawline(minx, maxx, y)
+
+                if (!changed1) t1x += signx1
+                t1x += t1xp
+                if (!changed2) t2x += signx2
+                t2x += t2xp
+                y++
+                if (y > yy3) return@phase2
+                i++
+            }
+        }
+
+        phase1()
+        phase2()
+    }
+
+    fun fillTriangle(
+            x1: Float,
+            y1: Float,
+            x2: Float,
+            y2: Float,
+            x3: Float,
+            y3: Float,
+            pixel: Pixel = Presets.WHITE
+    ) {
+        fillTriangle(x1.toInt(), y1.toInt(), x2.toInt(), y2.toInt(), x3.toInt(), y3.toInt(), pixel)
+    }
+
+    fun fillTriangle(pos1: Vf2d, pos2: Vf2d, pos3: Vf2d, pixel: Pixel = Presets.WHITE) {
+        fillTriangle(
+                pos1.x.toInt(),
+                pos1.y.toInt(),
+                pos2.x.toInt(),
+                pos2.y.toInt(),
+                pos3.x.toInt(),
+                pos3.y.toInt(),
+                pixel
+        )
     }
 
     fun drawSprite(pos: Vf2d, sprite: Sprite, scaleX: Float = 1.0f, scaleY: Float = 1.0f) {

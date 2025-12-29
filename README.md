@@ -92,6 +92,7 @@ To create a simple game, create a file named `MyGame.kt` in the same directory a
 ```kotlin
 class MyGame : PixelGameEngine() {
     private var playerPos = Vf2d()
+    val PLAYER_RADIUS = 25f
 
     // Set the window title
     init {
@@ -121,23 +122,32 @@ class MyGame : PixelGameEngine() {
     override fun onUserUpdate(elapsedTime: Float): Boolean {
         // Clear screen to blue background
         clear(Presets.BLUE)
-        
-        // Draw game text
-        drawString(10, 10, "Hello, pixel world!", Presets.CYAN)
-        drawString(10, 30, "Use arrow keys to move around", Presets.GRAY)
-        
-        // Draw player circle
-        fillCircle(playerPos, 50f, Presets.MINT)
 
+        // Draw game text
+        drawString(10, 10, "Player Position: $playerPos", Presets.LAVENDER)
+        drawString(10, 30, "Use arrow keys to move around", Presets.CYAN)
+
+        // Draw player pattern (a pixel apple)
+        fillCircle(playerPos, PLAYER_RADIUS, Presets.RED)
+        fillCircle(playerPos - Vf2d(12f, 12f), 6f, Presets.WHITE)
+        fillTriangle(
+                playerPos.x,
+                playerPos.y - 15,
+                playerPos.x + 10,
+                playerPos.y - 30,
+                playerPos.x + 25,
+                playerPos.y - 25,
+                Presets.GREEN
+        )
         // Handle player movement
         if (getKey(Key.LEFT).held) playerPos.x -= 50 * elapsedTime
         if (getKey(Key.RIGHT).held) playerPos.x += 50 * elapsedTime
         if (getKey(Key.UP).held) playerPos.y -= 50 * elapsedTime
         if (getKey(Key.DOWN).held) playerPos.y += 50 * elapsedTime
-        
+
         // Apply screen wrapping
         wrapPosition(playerPos)
-        
+
         // Exit game when ESC is pressed
         return !getKey(Key.ESCAPE).pressed
     }
