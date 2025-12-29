@@ -69,10 +69,10 @@ The `Pixel` class represents a 32-bit RGBA color with comprehensive functionalit
 
 **Example Usage:**
 ```kotlin
-val red = Pixel(255, 0, 0)                     // Solid red
+val red = Pixel(255, 0, 0)                      // Solid red
 val semiTransparentBlue = Pixel(0, 0, 255, 128) // Semi-transparent blue
 val combined = red + semiTransparentBlue        // Color blending
-val darkened = combined * 0.5f                   // Color darkening
+val darkened = combined * 0.5f                  // Color darkening
 ```
 
 ### Vector and Geometry
@@ -153,19 +153,19 @@ fun main() {
 
 ### Compiling and Running
 
-**Compile the game:**
+- **Compile the game:**
 ```bash
 kotlinc MyGame.kt PixelGameEngine.kt -include-runtime -d MyGame.jar
 ```
 
-**Run the compiled game:**
+- **Run the compiled game:**
 ```bash
 java -jar MyGame.jar
-# Alternative:
+# or:
 kotlin MyGame.jar
 ```
 
-Enjoy creating your own pixel games!
+- Enjoy creating your own pixel games!
 
 ## License
 

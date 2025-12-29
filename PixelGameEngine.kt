@@ -783,6 +783,18 @@ abstract class PixelGameEngine {
         g.fillRect(x, y, 1, 1)
     }
 
+    fun draw(pos: Vi2d, pixel: Pixel = Presets.WHITE) {
+        draw(pos.x, pos.y, pixel)
+    }
+
+    fun draw(x: Float, y: Float, pixel: Pixel = Presets.WHITE) {
+        draw(x.toInt(), y.toInt(), pixel)
+    }
+
+    fun draw(pos: Vf2d, pixel: Pixel = Presets.WHITE) {
+        draw(pos.x.toInt(), pos.y.toInt(), pixel)
+    }
+
     fun drawLine(x1: Int, y1: Int, x2: Int, y2: Int, pixel: Pixel = Presets.WHITE) {
         // Bresenham's line algorithm
         val temp = Vi2d(x1, y1)
@@ -1104,7 +1116,7 @@ abstract class PixelGameEngine {
             // Call user update function
             if (!onUserUpdate(lastElapsed)) {
                 atomActive.set(false)
-                frame.dispose()
+                shutdown()
                 break
             }
 
