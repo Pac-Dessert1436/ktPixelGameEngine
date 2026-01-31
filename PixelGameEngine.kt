@@ -1261,6 +1261,25 @@ abstract class PixelGameEngine {
         drawStringX(fontName, pos.x.toInt(), pos.y.toInt(), text, pixel, scale)
     }
 
+    fun drawStringX(fontObj: Font, x: Int, y: Int, text: String, pixel: Pixel = Presets.WHITE) {
+        val g = buffer?.graphics as? Graphics2D ?: return
+        g.color = pixel.toColor()
+        g.font = fontObj
+        g.drawString(text, x, y + fontObj.size)
+    }
+
+    fun drawStringX(fontObj: Font, pos: Vi2d, text: String, pixel: Pixel = Presets.WHITE) {
+        drawStringX(fontObj, pos.x, pos.y, text, pixel)
+    }
+
+    fun drawStringX(fontObj: Font, x: Float, y: Float, text: String, pixel: Pixel = Presets.WHITE) {
+        drawStringX(fontObj, x.toInt(), y.toInt(), text, pixel)
+    }
+
+    fun drawStringX(fontObj: Font, pos: Vf2d, text: String, pixel: Pixel = Presets.WHITE) {
+        drawStringX(fontObj, pos.toInt(), text, pixel)
+    }
+
     // o-----------------------------------------------------------------------------o
     // | Pixel Text Rendering Functions                                              |
     // o-----------------------------------------------------------------------------o
